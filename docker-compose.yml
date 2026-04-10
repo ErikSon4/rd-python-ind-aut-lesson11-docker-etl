@@ -1,0 +1,35 @@
+version: '3.9'
+
+services:
+  db:
+    image: mariadb:11
+    container_name: mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: mydb
+    volumes:
+      - ./db_init:/docker-entrypoint-initdb.d
+    ports:
+      - "3306:3306"
+    networks:
+      - etl_network
+
+  loader:
+    build: ./csv_loader
+    depends_on:
+      - db
+    networks:
+        - etl_network
+
+  api:
+    build: ./api
+    depends_on:
+      - db
+    ports:
+      - "5000:5000"
+    networks:
+        - etl_network
+
+networks:
+  etl_network:
+    driver: bridge
